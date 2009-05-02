@@ -1,0 +1,10 @@
+# dm-lite
+
+DM-Lite is a clone on DataMapper, utilizing some of the great ideas available
+in DataMapper, only with less complexity. Its really just a research project at
+the moment, I want to try some ideas without the overhead of 90s of DataMapper
+spec suite.
+
+## Copyright
+
+Copyright (c) 2009 Paul Sadauskas. See LICENSE for details.
