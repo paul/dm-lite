@@ -16,13 +16,6 @@ rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
 end
 
-require 'rake/testtask'
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/*_test.rb'
-  test.verbose = true
-end
-
 begin
   require 'rcov/rcovtask'
   Rcov::RcovTask.new do |test|
@@ -36,21 +29,20 @@ rescue LoadError
   end
 end
 
-
-task :default => :test
-
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  if File.exist?('VERSION.yml')
-    config = YAML.load(File.read('VERSION.yml'))
-    version = "#{config[:major]}.#{config[:minor]}.#{config[:patch]}"
-  else
-    version = ""
-  end
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "dm-lite #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
+require 'spec/rake/spectask'
+desc 'Run all specs'
+Spec::Rake::SpecTask.new(:spec) do |t|
+  t.spec_opts << '--options' << 'spec/spec.opts' if File.exists?('spec/spec.opts')
+  t.libs << 'lib'
+  t.spec_files = FileList['spec/**/*_spec.rb'] 
 end
+
+desc 'Default: Run Specs'
+task :default => :spec
+
+desc 'Run all tests'
+task :test => :spec
+
+
+task :default => :spec
 
