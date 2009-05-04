@@ -27,7 +27,7 @@ performance gains.
 
 _Update_ It is significantly faster to use the hashed value of an array as the
 key of a hash, even when including the time required to compute the hash. See
-[http://gist.github.com/106559] for code.
+[http://gist.github.com/106559](http://gist.github.com/106559) for code.
 
      % ruby array_hash_key.rb
                                                       Array |   #hash |
