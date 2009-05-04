@@ -25,6 +25,18 @@ _Note_ We should investigate if ruby uses the `Array#hash` method when an array
 is used as the key in a Hash. If it doesn not, doing so explicitly may yield
 performance gains. 
 
+_Update_ It is significantly faster to use the hashed value of an array as the
+key of a hash, even when including the time required to compute the hash. See
+[http://gist.github.com/106559] for code.
+
+     % ruby array_hash_key.rb
+                                                      Array |   #hash |
+    -------------------------------------------------------------------
+    One element as key                                5.942 |   1.278 |
+    Two elements as key                               6.302 |   1.296 |
+    One element as key (inc computing hash)           6.139 |   3.315 |
+
+
 ## UnitOfWork
 
 The UnitOfWork represents a business transaction. Adapters that support it
