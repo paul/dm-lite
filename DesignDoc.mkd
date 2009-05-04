@@ -1,0 +1,112 @@
+
+# DM-Lite
+
+Components
+
+* IdentityMap 
+* UnitOfWork
+* Model
+* Resource
+* Property
+* Repository
+* Collection
+* Query
+* Associations
+
+## IdentityMap
+
+An IdentityMap holds copies of all the resources objects retrieved from a
+datastore through an adapter an a repository. The identity map lasts for the
+lifetime of a UnitOfWork. Writes to the datastore invalidate the entry in the
+IM. The key used in the identity map is the values of the key fields in the
+model, always an array. The value is the acutal resource object.
+
+_Note_ We should investigate if ruby uses the `Array#hash` method when an array
+is used as the key in a Hash. If it doesn not, doing so explicitly may yield
+performance gains. 
+
+## UnitOfWork
+
+The UnitOfWork represents a business transaction. Adapters that support it
+should model it as a native transaction. Before anything is written to the
+repository, all possible validations and code is executed. If anything raises,
+or any validation fails, nothing is written to the repository. There is the
+potential that something will get written to one repository, and writing to a
+second raises an error. Nothing can be done in this case, because the original
+data is already written, but we should raise an exception that contains enough
+information for a user to manually, or a smart adapter to automatically, roll
+back the transaction. Additionally, an adapter that supports native
+transactions can avoid sending the commit transation statement until all the
+other adapters have been written to.
+
+## Model
+
+The model is a module that contains the class methods for a resource.
+`#create`, `#all`, `#first`, etc. It also contains the description of
+resources, such as the properties, default repository, etc.
+
+## Resource
+
+A resource is an instance of a model. It is where the majority of the logic
+lies. It knows what model was used to generate it, the repository it was
+retrieved from, as well as the collection it belongs to, if any.
+
+## Property
+
+The property consists of a name, a type, and some options. The name is what it
+used to define the getter and setter methods. The type is just a normal ruby
+class, which can also be extended to set default options on a property it gets
+set on. The options include things like an override for the field-name in the
+data store, a flag for which property is the key, as well as hints to
+validations or automigrations.
+
+_Opinion_
+An interesting thing to note, is that the prevalence of options in DM is not
+really necessary here. `key` can be assumed as the first defined property, if
+no key is explicitly set. `serial` makes little sense outside the rdbms
+adapers, and any sort of 'auto-fill' from the adapter can just be assumed. Eg,
+if the adapter knows how to set the value of a property, it will, there's no
+  need for a model to explicity say which fields they are. 
+
+Additionally, things like `length` or `size` make no sense to ruby. Numbers can
+be as big as we want, and the type is handled automatically. Strings can be
+infinetly long, within the limits of available memory. In several adapters,
+there's no need to apply these constraints to the model, and no default should
+be assumed. This greatly limits the complexity properties, and types, and moves
+the logic to the adapter, where it belongs. 
+
+## Repository
+
+The repository represents the connection to the data store. It usually, and at
+first, connects to a single adapter. A model identifies which repository it is
+contained in, and assumes the default adapter. 
+
+A future feature will be to support database sharding at this level.
+
+## Collection
+
+A collection is a set of resources. It is initially lazy, in that a query is
+not run until the last possible moment, ie, an attribute of a resource is
+accessed. I imagine that it will act as a normal enumerable, and we only have
+to implement `#each`, `#size`, and perhaps a couple other methods to make this
+work. I feel that the lazy-array approach in DM currently may be overkill, but
+it certainly requires more investigation.
+
+## Query
+
+A query is likely the second-most complex piece, after Resource. It contains
+all the search conditions, instructions on how to order and limit the result
+set, and any sub queries needed to support associations. It can cross
+repositories in the sub queries, to support associations across repos.
+
+The query code currently in DM is probably pretty close to what we need, aside
+from the associations.
+
+## Associations
+
+Rather than being subclasses of collection, and containing a great deal of
+logic, these (one-to-many, many-to-one, many-to-many) are simple objects that
+accept a set of options. Local model, Remote model (need a better name), and
+any additional options. These options are then used to set options on a query
+object, when the association is accessed.
+
