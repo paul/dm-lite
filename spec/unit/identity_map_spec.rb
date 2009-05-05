@@ -5,7 +5,7 @@ require 'dm-lite/identity_map'
 describe 'Identity Map' do
 
   before do
-    @im = IdentityMap.new
+    @im = DMLite::IdentityMap.new
 
     @paul = mock('Person', :model => "Person", :keys => [1])
     @im.store(@paul)
