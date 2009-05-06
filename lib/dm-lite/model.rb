@@ -31,6 +31,20 @@ module DMLite
       def properties
         @properties ||= []
       end
+
+      def repository
+        @repository || DMLite.repositories[:default]
+      end
+
+      def create(attrs)
+        resource = self.new(attrs)
+        resource.save
+      end
+
+      def set_default_repository(name)
+        @repository = DMLite.repositories[name]
+      end
+
     end
 
   end

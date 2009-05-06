@@ -8,8 +8,16 @@ module DMLite
       end
     end
 
-    def save
+    alias model class
 
+    def save
+      if DMLite.current_transaction
+        DMLite.current_transaction.add_operation(:create, self)
+      else
+        DMLite.transaction do
+          save
+        end
+      end
     end
 
   end
