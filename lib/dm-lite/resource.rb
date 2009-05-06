@@ -11,7 +11,7 @@ module DMLite
     alias model class
 
     def save
-      if DMLite.current_transaction
+      if DMLite.in_transaction?
         DMLite.current_transaction.add_operation(:create, self)
       else
         DMLite.transaction do

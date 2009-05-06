@@ -9,7 +9,7 @@ describe 'unit of work' do
     DMLite.setup(:default, @adapter1)
     DMLite.setup(:other, @adapter2)
 
-    class Person
+    class Boat
       include DMLite::Model
 
       set_default_repository :default
@@ -34,13 +34,13 @@ describe 'unit of work' do
       @adapter1.should_not_receive(:create)
       @adapter2.should_not_receive(:create)
 
+      b = Boat.new(:name => 'Jolly Roger')
+      c = Car.new(:make => "Mazda")
+      c.should_receive(:save).and_raise("an error")
+
       DMLite.transaction do
         lambda {
-          p = Person.new(:name => 'Paul')
-          c = Car.new(:make => "Mazda")
-          c.should_receive(:save).and_raise("an error")
-
-          p.save
+          b.save
           c.save
         }.should raise_error(RuntimeError)
       end

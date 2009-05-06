@@ -2,5 +2,5 @@
 require 'rubygems'
 require 'spec'
 
-require 'dm-lite'
+require File.dirname(__FILE__) + '/../lib/dm-lite'
 

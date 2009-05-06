@@ -18,20 +18,32 @@ module DMLite
   end
 
   def self.transaction(&blk)
-    Thread.current[:dm_lite_uow] ||= UnitOfWork.new
+    begin_transaction unless in_transaction?
     begin
       yield
       current_transaction.commit
-    rescue Exception => e
+    rescue RuntimeError => e
       current_transaction.rollback
       raise e
     ensure
-      Thread.current[:dm_lite_uow] = nil
+      end_transaction
     end
+  end
+
+  def self.in_transaction?
+    not current_transaction.nil?
   end
 
   def self.current_transaction
     Thread.current[:dm_lite_uow]
+  end
+
+  def self.begin_transaction
+    Thread.current[:dm_lite_uow] = UnitOfWork.new
+  end
+
+  def self.end_transaction
+    Thread.current[:dm_lite_uow] = nil
   end
 
 end
